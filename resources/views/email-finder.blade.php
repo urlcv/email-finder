@@ -31,7 +31,7 @@
                 type="text"
                 x-model="name"
                 @input="buildQueries()"
-                :placeholder="mode === 'mine' ? 'e.g. Chris or Chris Smith' : 'e.g. John Smith'"
+                :placeholder="mode === 'mine' ? 'e.g. Jane or Jane Doe' : 'e.g. John Smith'"
                 class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
         </div>
@@ -45,7 +45,7 @@
                 type="text"
                 x-model="company"
                 @input="buildQueries()"
-                :placeholder="mode === 'mine' ? 'e.g. Justni' : 'e.g. Acme Inc'"
+                :placeholder="mode === 'mine' ? 'e.g. Spotify' : 'e.g. Acme Inc'"
                 class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
         </div>
@@ -62,11 +62,11 @@
             type="text"
             x-model="domain"
             @input="buildQueries()"
-            :placeholder="mode === 'mine' ? 'e.g. justni.com — needed for email format suggestions' : 'e.g. acme.com'"
+            :placeholder="mode === 'mine' ? 'e.g. spotify.com — needed for email format suggestions' : 'e.g. acme.com'"
             class="block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
         <p class="mt-1.5 text-xs text-gray-500">
-            The part after <span class="font-mono">www.</span> in the company's website. From <span class="font-mono">https://www.justni.com/about</span> → use <span class="font-mono">justni.com</span>
+            The part after <span class="font-mono">www.</span> in the company's website. From <span class="font-mono">https://www.spotify.com/about</span> → use <span class="font-mono">spotify.com</span>
         </p>
     </div>
 
@@ -158,7 +158,7 @@
     {{-- Empty state --}}
     <template x-if="queries.length === 0 && emailFormats.length === 0 && (name.trim() || company.trim() || domain.trim())">
         <div class="text-center py-6 text-amber-600 text-sm bg-amber-50 border border-amber-200 rounded-xl">
-            <span x-show="mode === 'mine'">Add your name and domain (e.g. justni.com) to get likely email formats.</span>
+            <span x-show="mode === 'mine'">Add your name and domain (e.g. spotify.com) to get likely email formats.</span>
             <span x-show="mode === 'other'">Enter name and either company or domain to generate queries.</span>
         </div>
     </template>
@@ -173,7 +173,7 @@
     {{-- Tip --}}
     <div class="rounded-xl p-4 text-sm bg-blue-50 border border-blue-200 text-blue-800">
         <span class="font-semibold">Tip:</span>
-        <span x-show="mode === 'mine'">Add your domain to get format suggestions (e.g. chris@justni.com). Search each to see if it appears anywhere. Try Bing or Yandex if Google shows nothing.</span>
+        <span x-show="mode === 'mine'">Add your domain to get format suggestions (e.g. jane.doe@spotify.com). Search each to see if it appears anywhere. Try Bing or Yandex if Google shows nothing.</span>
         <span x-show="mode === 'other'">Add the domain for better results — you'll get likely email formats plus search queries. Try Bing or Yandex if Google limits results.</span>
     </div>
 </div>
