@@ -1,0 +1,37 @@
+{
+    "name": "urlcv/email-finder",
+    "description": "Generate search engine queries to find professional email addresses by name and company. Powers the free Email Finder tool at urlcv.com.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["email", "finder", "sourcing", "recruitment", "search", "contact"],
+    "homepage": "https://urlcv.com/tools/email-finder",
+    "authors": [
+        {
+            "name": "URLCV",
+            "homepage": "https://urlcv.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "suggest": {
+        "illuminate/support": "Required for Laravel integration (Blade views)"
+    },
+    "autoload": {
+        "psr-4": {
+            "URLCV\\EmailFinder\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "URLCV\\EmailFinder\\Laravel\\EmailFinderServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}
