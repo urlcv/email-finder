@@ -175,6 +175,7 @@
         <span class="font-semibold">Tip:</span>
         <span x-show="mode === 'mine'">Add your domain to get format suggestions (e.g. jane.doe@spotify.com). Search each to see if it appears anywhere. Try Bing or Yandex if Google shows nothing.</span>
         <span x-show="mode === 'other'">Add the domain for better results — you'll get likely email formats plus search queries. Try Bing or Yandex if Google limits results.</span>
+        <span class="block mt-2 text-blue-900/90">This tool only opens web search — it can’t find addresses that aren’t on public pages (many work emails never appear in Google). Dedicated email APIs (e.g. enrichment tools) use separate databases, not the same as these queries.</span>
     </div>
 </div>
 
@@ -230,30 +231,82 @@ function emailFinder() {
             const qs = [];
 
             if (d) {
-                // DOMAIN PROVIDED — research-backed queries (35–45% success for professionals)
-                // #1: Direct name + domain email — conference bios, press releases, author bylines
+                // DOMAIN PROVIDED — web search can only surface emails already on public pages (bios, PDFs, code, etc.)
+                // #1: Exact name + @domain — strongest signal when quoted in pages
                 qs.push({ strategy: 'Name + @domain (best)', query: `"${n}" "@${d}"`, urls: url(`"${n}" "@${d}"`) });
 
-                // Company site: team pages, blog bios, contact pages
+                // Company site: common URL paths where emails appear in HTML (mailto:) or text
                 qs.push({ strategy: 'Company site + email', query: `site:${d} "${n}" email`, urls: url(`site:${d} "${n}" email`) });
+                qs.push({
+                    strategy: 'Team / people / contact pages',
+                    query: `site:${d} "${n}" (inurl:team OR inurl:people OR inurl:contact OR inurl:about OR inurl:staff)`,
+                    urls: url(`site:${d} "${n}" (inurl:team OR inurl:people OR inurl:contact OR inurl:about OR inurl:staff)`),
+                });
+                qs.push({
+                    strategy: 'mailto: on company site',
+                    query: `site:${d} ("${n}" mailto OR "${n}" "@${d}")`,
+                    urls: url(`site:${d} ("${n}" mailto OR "${n}" "@${d}")`),
+                });
 
-                // PDFs: conference proceedings, whitepapers, research — goldmine for emails
+                // PDFs: conference proceedings, whitepapers, speaker lists
                 qs.push({ strategy: 'PDF documents', query: `filetype:pdf "${n}" "@${d}"`, urls: url(`filetype:pdf "${n}" "@${d}"`) });
+                // Word/attachments from intranet leaks, event handouts
+                qs.push({
+                    strategy: 'Word / document attachments',
+                    query: `(filetype:doc OR filetype:docx) "${n}" "${d}"`,
+                    urls: url(`(filetype:doc OR filetype:docx) "${n}" "${d}"`),
+                });
 
-                // GitHub: developers often expose work email
+                // GitHub / GitLab: commit metadata & profiles sometimes list work email
                 qs.push({ strategy: 'GitHub (developers)', query: `site:github.com "${n}" "@${d}"`, urls: url(`site:github.com "${n}" "@${d}"`) });
+                qs.push({ strategy: 'GitLab (developers)', query: `site:gitlab.com "${n}" "@${d}"`, urls: url(`site:gitlab.com "${n}" "@${d}"`) });
 
-                // Conference speakers: bios often list email
-                qs.push({ strategy: 'Conference/speaker', query: `"${n}" ${c || d} speaker email OR contact`, urls: url(`"${n}" ${c || d} speaker email OR contact`) });
+                // Stack Overflow / Dev: company email in profile or conference talks
+                qs.push({
+                    strategy: 'Stack Overflow (developers)',
+                    query: `site:stackoverflow.com "${n}" "${d}"`,
+                    urls: url(`site:stackoverflow.com "${n}" "${d}"`),
+                });
 
-                // Pattern discovery: find other employees' emails to deduce format
-                qs.push({ strategy: 'Pattern discovery', query: `"@${d}" -site:${d}`, urls: url(`"@${d}" -site:${d}`) });
+                // Conference / speaker bios (company name helps disambiguate common names)
+                qs.push({
+                    strategy: 'Conference / speaker',
+                    query: `"${n}" ${c || d} (speaker OR keynote OR bio) (email OR contact OR mailto)`,
+                    urls: url(`"${n}" ${c || d} (speaker OR keynote OR bio) (email OR contact OR mailto)`),
+                });
 
-                // SlideShare/SpeakerDeck: presenter email on slides
-                qs.push({ strategy: 'Presentations', query: `(site:slideshare.net OR site:speakerdeck.com) "${n}" "@${d}"`, urls: url(`(site:slideshare.net OR site:speakerdeck.com) "${n}" "@${d}"`) });
+                // PDF employee lists / rosters (narrower than "@domain" alone — less noise than old "pattern discovery")
+                qs.push({
+                    strategy: 'PDFs mentioning @domain',
+                    query: `filetype:pdf "${n}" ("@${d}" OR "${d}")`,
+                    urls: url(`filetype:pdf "${n}" ("@${d}" OR "${d}")`),
+                });
 
-                // Exclude social — LinkedIn/Facebook rarely have actual emails
-                qs.push({ strategy: 'Excluding social', query: `"${n}" "${d}" (email OR contact) -site:linkedin.com -site:facebook.com`, urls: url(`"${n}" "${d}" (email OR contact) -site:linkedin.com -site:facebook.com`) });
+                // SlideShare / SpeakerDeck: presenter contact on slides
+                qs.push({
+                    strategy: 'Presentations',
+                    query: `(site:slideshare.net OR site:speakerdeck.com) "${n}" "@${d}"`,
+                    urls: url(`(site:slideshare.net OR site:speakerdeck.com) "${n}" "@${d}"`),
+                });
+
+                // Press wires sometimes include media contacts with emails
+                if (c) {
+                    qs.push({
+                        strategy: 'Press releases',
+                        query: `"${n}" "${c}" (site:prnewswire.com OR site:businesswire.com OR site:globenewswire.com)`,
+                        urls: url(`"${n}" "${c}" (site:prnewswire.com OR site:businesswire.com OR site:globenewswire.com)`),
+                    });
+                }
+
+                // LinkedIn rarely shows raw email in snippets; still useful to confirm identity + role before guessing format
+                qs.push({ strategy: 'LinkedIn (identity check)', query: `"${n}" "${d}" site:linkedin.com/in`, urls: url(`"${n}" "${d}" site:linkedin.com/in`) });
+
+                // Exclude social for “email OR contact” broad search — FB/IG almost never have professional emails in snippets
+                qs.push({
+                    strategy: 'Broad search (no social)',
+                    query: `"${n}" "${d}" (email OR contact OR mailto) -site:facebook.com -site:instagram.com -site:tiktok.com`,
+                    urls: url(`"${n}" "${d}" (email OR contact OR mailto) -site:facebook.com -site:instagram.com -site:tiktok.com`),
+                });
             } else {
                 // NO DOMAIN — fallback queries (weaker but still useful)
                 qs.push({ strategy: 'Name + company + email', query: `"${n}" "${c}" email`, urls: url(`"${n}" "${c}" email`) });

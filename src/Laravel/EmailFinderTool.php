@@ -39,17 +39,17 @@ Enter a person's name and company, and this tool generates multiple search engin
 ### How it works
 
 - **Input:** Full name and company name
-- **Output:** Pre-built search URLs for Google, Bing, and DuckDuckGo
-- Each query uses a different strategy — direct email search, site-specific search, LinkedIn, contact pages, etc.
+- **Output:** Pre-built search URLs for Google, Bing, DuckDuckGo, and Yandex
+- Each query uses a different strategy — direct `@domain` search, `site:` + `inurl:` on the company domain, PDFs, GitHub/GitLab, press wires, etc.
 - Click any link to open the search in a new tab and scan results for the email
 
-### Query strategies
+### Query strategies (examples)
 
-- Direct email search: `"John Smith" email "Acme Inc"`
-- Company domain search: `John Smith site:acme.com`
-- LinkedIn + company: `John Smith site:linkedin.com Acme`
-- Contact page search: `"John Smith" contact Acme`
-- Email format hints: `John Smith Acme email format`
+- Direct: `"Jane Doe" "@acme.com"`
+- Company site paths: `site:acme.com "Jane Doe" (inurl:team OR inurl:contact …)`
+- Documents: `filetype:pdf`, Word files, SlideShare
+- Developers: GitHub / GitLab / Stack Overflow with the company domain
+- Likely address formats (when domain is known) to verify in search
 
 ### Use cases for recruiters
 
